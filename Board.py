@@ -2,6 +2,7 @@ from Pieces import Piece
 from Pieces import new_empty_piece
 
 
+# Create the backline for building the board
 def create_back_line(color: Piece.Color):
 	rook = Piece.Type.Rook
 	knight = Piece.Type.Knight
@@ -12,14 +13,17 @@ def create_back_line(color: Piece.Color):
 	return [Piece(p, color) for p in pieces]
 
 
+# Create the front line for building a board
 def create_front_line(color: Piece.Color):
 	return [Piece(Piece.Type.Pawn, color) for i in range(8)]
 
 
+# Creates an empty line for building a board
 def create_empty_line():
 	return [new_empty_piece() for i in range(8)]
 
 
+# Generate the board
 def createBoard():
 	black = Piece.Color.Black
 	white = Piece.Color.White
@@ -37,10 +41,12 @@ def createBoard():
 	return board
 
 
+# Convert from pos to move
 def conv_pos(pos: str):
 	return (ord(pos[0]) - 65, 8 - int(pos[1]))
 
 
+# Convert move from text to actual move
 def conv_move(move: str):
 	dirs = move.split("->")
 	return (conv_pos(dirs[0]), conv_pos(dirs[1]))
@@ -52,30 +58,37 @@ class Board:
 		self.marked = [[False for i in range(8)] for j in range(8)]
 	
 	
+	# Check if x, y are in the board
 	def is_in(self, x: int, y: int):
 		return 0 <= x and x < 8 and 0 <= y and y < 8
 	
 	
+	# Check is a spot is empty
 	def is_empty(self, x: int, y: int):
 		return self.is_in(x, y) and self.board[y][x].piece == Piece.Type.Empty
 	
 	
+	# Check is a spot is marked
 	def is_marked(self, x: int, y: int):
 		return self.is_in(x, y) and self.marked[y][x]
 	
 	
+	# Check if two pieces are of the same color
 	def is_same_color(self, x1: int, y1: int, x2: int, y2: int):
 		return self.board[y1][x1].color == self.board[y2][x2].color
 	
 	
+	# Get the color of the piece
 	def get_color(self, x: int, y: int):
 		return self.board[y][x].color
 	
 	
+	# Get the type of a piece
 	def get_type(self, x: int, y: int):
 		return self.board[y][x].piece
 	
 	
+	# Get the first piece in the list, it's position
 	def get_piece_pos(self, piece: Piece.Type, color: Piece.Color):
 		for i in range(8):
 			for j in range(8):
@@ -83,26 +96,21 @@ class Board:
 					return (j, i)
 	
 	
+	# Move a piece to another
 	def move(self, x1: int, y1: int, x2: int, y2: int):
 		self.board[y1][x1].moved = True
 		self.board[y2][x2] = self.board[y1][x1]
 		self.board[y1][x1] = new_empty_piece()
 	
 	
+	# Switch two pieces
 	def switch(self, x1: int, y1: int, x2: int, y2: int):
 		tmp = self.board[y1][x2]
 		self.board[y1][x1] = self.board[y2][x2]
 		self.board[y2][x2] = tmp
 	
 	
-	def switch(self, dir: str):
-		# d6->f1
-		instr = dir.split("->")
-		f = conv_pos(instr[0]) # from
-		t = conv_pos(instr[1]) # to
-		self.switch(f[0], f[1], t[0], t[1])
-	
-	
+	# Try and add a movable spot
 	def add_spot(self, moves: list, x1: int, y1: int, x2: int, y2: int):
 		# Checks if a spot is empty, if so, adds it to the moves list,
 		# otherwise, it will check if the block is still a valid spot
@@ -116,6 +124,7 @@ class Board:
 			return False
 	
 	
+	# Get pawn moves
 	def get_pawn_moves(self, moves: list, x: int, y: int):
 		# Check front
 		check = (-1, +1)[self.board[y][x].is_black()]
@@ -130,6 +139,7 @@ class Board:
 			moves.append((x + 1, y + check))
 	
 	
+	# Get rook moves
 	def get_rook_moves(self, moves: list, x: int, y: int):
 		# Check up
 		for i in range(y -1, -1, -1):
@@ -149,6 +159,7 @@ class Board:
 				break
 	
 	
+	# Get bishop moves
 	def get_bishop_moves(self, moves: list, x: int, y: int):
 		# Check top left
 		for i, j in zip(range(x -1, -1, -1), range(y -1, -1, -1)):
@@ -168,6 +179,7 @@ class Board:
 				break
 	
 	
+	# Get knight moves
 	def get_knight_moves(self, moves: list, x: int, y: int):
 		# Check top
 		if y > 1:
@@ -195,6 +207,7 @@ class Board:
 				self.add_spot(moves, x, y, x + 2, y + 1)
 	
 	
+	# Get all the moves from a team with the specified color
 	def get_team_moves(self, color: Piece.Color):
 		# Gets all the team's moves
 		other_moves = []
@@ -211,11 +224,15 @@ class Board:
 		return other_moves
 	
 	
+	# Get all the moves from the other team
 	def get_other_team_moves(self, color: Piece.Color):
 		other_color = (Piece.Color.White, Piece.Color.Black)[color == Piece.Color.White]
 		return self.get_team_moves(other_color)
 	
 	
+	# Gets the king moves with a complex alg that is simple.
+	# Check all the pieces, for the king, to avoid recursiveness,
+	# we just do a simple 3x3 check around our king boi
 	def get_king_moves(self, moves: list, x: int, y: int):
 		other_moves = self.get_other_team_moves(self.get_color(x, y))
 		# Add the moves for the king
@@ -225,6 +242,8 @@ class Board:
 					self.add_spot(moves, x, y, i, j)
 	
 	
+	# General function that calls the one above it to get the list
+	# of proper moves
 	def get_moves(self, x: int, y: int):
 		piece = self.board[y][x]
 		moves = []
@@ -246,6 +265,8 @@ class Board:
 		return moves
 	
 	
+	# Make sure that this is a valid move that can be done,
+	# if so, move it.
 	def move_validly(self, x1: int, y1: int, x2: int, y2: int):
 		if (x2, y2) in self.get_moves(x1, y1):
 			self.move(x1, y1, x2, y2)
@@ -254,19 +275,21 @@ class Board:
 			return False
 	
 	
+	# Select what to mark or unmark with a list
 	def mark(self, moves: list, yes: bool = True):
 		self.unmark_all()
 		for x, y in moves:
 			self.marked[y][x] = yes
 	
 	
+	# Unmarks all places
 	def unmark_all(self):
 		self.marked = [[False for i in range(8)] for j in range(8)]
 	
 	
+	# Check if a color is losing or winning (son)
+	# Returns 1 for check, and 2 for check mate, 0 for none
 	def is_check_mate(self, color: Piece.Color):
-		# Check if a color is losing or winning (son)
-		# Returns 1 for check, and 2 for check mate, 0 for none
 		other_moves = self.get_other_team_moves(color)
 		king_pos = self.get_piece_pos(Piece.Type.King, color)
 		king_moves = []
@@ -280,6 +303,7 @@ class Board:
 			return 0
 	
 	
+	# Nicely display the board
 	def display(self):
 		r = range(8)
 		line_break = "-" * 41

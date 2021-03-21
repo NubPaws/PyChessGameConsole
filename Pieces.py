@@ -41,6 +41,7 @@ class Piece:
 		return f"{('w', 'b')[self.color == Piece.Color.Black]}{self.piece.value}"
 	
 	
+	# For simlpe equalities l8r
 	def __eq__(self, p):
 		if isinstance(p, Piece.Type):
 			return self.piece == p
@@ -48,6 +49,7 @@ class Piece:
 			return self.color == p
 
 
+# Generate a new empty piece
 def new_empty_piece():
 	return Piece(Piece.Type.Empty, Piece.Color.Empty)
 
