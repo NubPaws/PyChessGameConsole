@@ -65,7 +65,7 @@ class Board:
 	
 	# Check is a spot is empty
 	def is_empty(self, x: int, y: int):
-		return self.is_in(x, y) and self.board[y][x].piece == Piece.Type.Empty
+		return self.is_in(x, y) and self.board[y][x].is_empty()
 	
 	
 	# Check is a spot is marked
@@ -309,15 +309,15 @@ class Board:
 		line_break = "-" * 41
 		print("| A  | B  | C  | D  | E  | F  | G  | H  |")
 		print(line_break)
-		for i in r:
+		for i, line in enumerate(self.board):
 			print("| ", end="")
-			for j in r:
-				if self.is_empty(j, i):
+			for j, piece in enumerate(line):
+				if piece.is_empty():
 					if self.is_marked(j, i):
 						print("XX", end=" | ")
 					else:
 						print("  ", end=" | ")
 				else:
-					print(self.board[i][j], end=" | ")
+					print(piece, end=" | ")
 			print(8 - i)
 			print(line_break)

@@ -27,6 +27,10 @@ class Piece:
 		return self.moved
 	
 	
+	def is_empty(self):
+		return self.piece == Piece.Type.Empty
+	
+	
 	def is_black(self):
 		return self.color == Piece.Color.Black
 	
